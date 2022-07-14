@@ -1,9 +1,11 @@
 import json
 from typing import Literal, NamedTuple
 
-import requests
-from fake_headers import Headers
 from bs4 import BeautifulSoup as bs4
+from fake_headers import Headers
+from fake_useragent import UserAgent
+from selenium.webdriver.chrome.options import Options
+from seleniumrequests import Chrome
 
 
 SIZES = Literal["small", "medium", "large"]
@@ -26,7 +28,6 @@ class YandexImage:
     _URL = "https://yandex.ru/images/search"
 
     def __init__(self, sizes: SIZES) -> None:
-        self.headers = Headers(headers=True).generate()
         self.sizes = sizes
 
     @staticmethod
@@ -60,11 +61,21 @@ class YandexImage:
         return output
 
     def search(self, query: str) -> list[str]:
-        request = requests.get(
+        headers = Headers(headers=True).generate()
+        ua = UserAgent()
+        options = Options()
+        options.add_argument(f"user-agent={ua.random}")
+
+        driver = Chrome(chrome_options=options)
+
+        request = driver.request(
+            "GET",
             self._URL,
             params={"text": query, "nomisspell": 1, "noreask": 1, "isize": self.sizes},
-            headers=self.headers,
+            headers=headers,
         )
+
+        driver.quit()
 
         if request.ok:
             return self._parse_result_page(request.text)
