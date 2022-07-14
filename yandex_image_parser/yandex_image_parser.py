@@ -14,18 +14,12 @@ class Size(NamedTuple):
     width: int
 
 
-class Preview(NamedTuple):
-    url: str
-    size: Size
-
-
 class Result(NamedTuple):
     title: str
     description: str
     domain: str
     url: str
     size: Size
-    preview: Preview
 
 
 class YandexImage:
@@ -47,16 +41,10 @@ class YandexImage:
             data = json.loads(item.get("data-bem"))
             image_url = data["serp-item"]["img_href"]
             snippet = data["serp-item"]["snippet"]
-            preview = "https:" + data["serp-item"]["thumb"]["url"]
 
             img_size = Size(
                 data["serp-item"]["preview"][0]["w"],
                 data["serp-item"]["preview"][0]["h"],
-            )
-
-            preview_size = Size(
-                data["serp-item"]["thumb"]["size"]["width"],
-                data["serp-item"]["thumb"]["size"]["height"],
             )
 
             result = Result(
@@ -65,7 +53,6 @@ class YandexImage:
                 snippet.get("domain", ""),
                 image_url,
                 img_size,
-                Preview(preview, preview_size),
             )
 
             output.append(result)
