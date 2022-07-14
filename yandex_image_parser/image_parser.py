@@ -9,10 +9,14 @@ from bs4 import BeautifulSoup as bs4
 SIZES = Literal["small", "medium", "large"]
 
 
+class Size(NamedTuple):
+    height: int
+    width: int
+
+
 class Preview(NamedTuple):
     url: str
-    width: int
-    height: int
+    size: Size
 
 
 class Result(NamedTuple):
@@ -20,8 +24,7 @@ class Result(NamedTuple):
     description: str
     domain: str
     url: str
-    width: int
-    height: int
+    size: Size
     preview: Preview
 
 
@@ -30,8 +33,6 @@ class YandexImage:
 
     def __init__(self):
         self.headers = Headers(headers=True).generate()
-        self.version = "1.0-release"
-        self.about = "Yandex Images Parser"
 
     def search(self, query: str, sizes: SIZES = "large") -> list[str]:
         request = requests.get(
@@ -63,9 +64,8 @@ class YandexImage:
                 snippet.get("text", ""),
                 snippet.get("domain", ""),
                 image,
-                image_width,
-                image_height,
-                Preview(preview, preview_width, preview_height),
+                Size(image_width, image_height),
+                Preview(preview, Size(preview_width, preview_height)),
             )
 
             output.append(result)
